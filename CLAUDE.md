@@ -23,9 +23,11 @@ Needs `inotify-tools`.
 - `"schemaVersion": 1` must be the number 1, not the string `"1"`.
 - Required fields: `id`, `name`, `version`, `kinds` (a non-empty array) and
   `entryPoints` (an object).
-- `id` must stay `direkiwi.webapp-chrome-profile`. `omarchy plugin add` installs the repo into
-  `~/.config/omarchy/plugins/<id>/`, so renaming it breaks updates for anyone
-  who has it installed.
+- `id` must stay `direkiwi.webapp-chrome-profile`. The repo is named
+  `omarchy-webapp-chrome-profile`, like other Omarchy plugin repos, but
+  `omarchy plugin add` installs it into `~/.config/omarchy/plugins/<id>/`.
+  Renaming the id breaks updates for anyone who has it installed. Ids can't
+  use `omarchy.*`, which is reserved for Omarchy's built-in plugins.
 - Every kind needs its entry point: `bar-widget`→`barWidget`, `panel`→`panel`,
   `overlay`→`overlay`, `menu`→`menu`, `service`→`service`, `bar`→`bar`.
 - Entry points must be relative paths, with no `..`, to files that exist.
@@ -53,7 +55,7 @@ overwritten on update.
 ## Testing
 
 ```bash
-ln -s ~/personal/direkiwi.webapp-chrome-profile ~/.config/omarchy/plugins/direkiwi.webapp-chrome-profile   # once
+ln -s ~/personal/omarchy-webapp-chrome-profile ~/.config/omarchy/plugins/direkiwi.webapp-chrome-profile   # once
 omarchy-shell shell rescanPlugins
 omarchy plugin enable direkiwi.webapp-chrome-profile
 omarchy plugin list --json          # confirm it was discovered

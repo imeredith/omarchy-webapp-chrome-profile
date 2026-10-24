@@ -31,13 +31,13 @@ again.
 
 ```bash
 sudo pacman -S inotify-tools
-omarchy plugin add https://github.com/<owner>/direkiwi.webapp-chrome-profile.git --enable
+omarchy plugin add https://github.com/<owner>/omarchy-webapp-chrome-profile.git --enable
 ```
 
 To work on the plugin from a local checkout, symlink it in instead:
 
 ```bash
-ln -s ~/personal/direkiwi.webapp-chrome-profile ~/.config/omarchy/plugins/direkiwi.webapp-chrome-profile
+ln -s ~/personal/omarchy-webapp-chrome-profile ~/.config/omarchy/plugins/direkiwi.webapp-chrome-profile
 omarchy-shell shell rescanPlugins
 omarchy plugin enable direkiwi.webapp-chrome-profile
 ```
