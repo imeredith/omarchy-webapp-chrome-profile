@@ -37,21 +37,21 @@ again.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/<owner>/omarchy-webapp-chrome-profile.git --enable
+omarchy plugin add https://github.com/imeredith/omarchy-webapp-chrome-profile.git --enable
 ```
 
 To work on the plugin from a local checkout, symlink it in instead:
 
 ```bash
-ln -s ~/personal/omarchy-webapp-chrome-profile ~/.config/omarchy/plugins/direkiwi.webapp-chrome-profile
+ln -s ~/personal/omarchy-webapp-chrome-profile ~/.config/omarchy/plugins/imeredith.webapp-chrome-profile
 omarchy-shell shell rescanPlugins
-omarchy plugin enable direkiwi.webapp-chrome-profile
+omarchy plugin enable imeredith.webapp-chrome-profile
 ```
 
 ## Remove
 
 ```bash
-omarchy plugin remove direkiwi.webapp-chrome-profile
+omarchy plugin remove imeredith.webapp-chrome-profile
 ```
 
 Launchers that already pin a profile keep it. To unpin one, delete

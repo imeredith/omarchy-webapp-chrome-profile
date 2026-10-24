@@ -16,7 +16,7 @@ file=$1
 
 # One prompt per launcher: the installer writes the file and may then append a
 # MimeType line, which reports a second write.
-lock_dir="${XDG_RUNTIME_DIR:-/tmp}/direkiwi.webapp-chrome-profile"
+lock_dir="${XDG_RUNTIME_DIR:-/tmp}/imeredith.webapp-chrome-profile"
 mkdir -p "$lock_dir"
 exec 9>"$lock_dir/$(basename "$file").lock"
 flock -n 9 || exit 0

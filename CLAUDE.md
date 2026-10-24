@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This repo is one Omarchy shell plugin, `direkiwi.webapp-chrome-profile`. It's
+This repo is one Omarchy shell plugin, `imeredith.webapp-chrome-profile`. It's
 QML loaded by `omarchy-shell`, a long-running Quickshell process. See README.md
 for the user-facing overview.
 
@@ -23,7 +23,7 @@ Needs `inotify-tools`.
 - `"schemaVersion": 1` must be the number 1, not the string `"1"`.
 - Required fields: `id`, `name`, `version`, `kinds` (a non-empty array) and
   `entryPoints` (an object).
-- `id` must stay `direkiwi.webapp-chrome-profile`. The repo is named
+- `id` must stay `imeredith.webapp-chrome-profile`. The repo is named
   `omarchy-webapp-chrome-profile`, like other Omarchy plugin repos, but
   `omarchy plugin add` installs it into `~/.config/omarchy/plugins/<id>/`.
   Renaming the id breaks updates for anyone who has it installed. Ids can't
@@ -55,9 +55,9 @@ overwritten on update.
 ## Testing
 
 ```bash
-ln -s ~/personal/omarchy-webapp-chrome-profile ~/.config/omarchy/plugins/direkiwi.webapp-chrome-profile   # once
+ln -s ~/personal/omarchy-webapp-chrome-profile ~/.config/omarchy/plugins/imeredith.webapp-chrome-profile   # once
 omarchy-shell shell rescanPlugins
-omarchy plugin enable direkiwi.webapp-chrome-profile
+omarchy plugin enable imeredith.webapp-chrome-profile
 omarchy plugin list --json          # confirm it was discovered
 omarchy restart shell               # needed for keepLoaded plugins
 ```
