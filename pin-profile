@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Pin a web app launcher written by omarchy-webapp-install to one profile of
+# the Chromium-based browser omarchy-launch-webapp will open it in.
+#
+# usage: pin-profile <path/to/App.desktop>
+#
+# Launchers that aren't plain web apps, or that already pin a profile, are left
+# alone. Dismissing the picker leaves the launcher on the browser's last-used
+# profile, as before.
+
+set -euo pipefail
+
+file=$1
+[[ $file == *.desktop && -f $file ]] || exit 0
+
+# One prompt per launcher: the installer writes the file and may then append a
+# MimeType line, which reports a second write.
+lock_dir="${XDG_RUNTIME_DIR:-/tmp}/direkiwi.webapp-chrome-profile"
+mkdir -p "$lock_dir"
+exec 9>"$lock_dir/$(basename "$file").lock"
+flock -n 9 || exit 0
+
+# Let the installer finish writing before reading the launcher.
+sleep 0.5
+
+exec_line=$(grep -m1 '^Exec=' "$file") || exit 0
+[[ $exec_line == "Exec=omarchy-launch-webapp "* ]] || exit 0
+[[ $exec_line == *--profile-directory* ]] && exit 0
+
+# Same browser choice as omarchy-launch-webapp: the default browser when it is
+# Chromium-based, otherwise Chromium.
+case $(omarchy-cmd-default-browser) in
+google-chrome-beta*) data_dir=google-chrome-beta ;;
+google-chrome-unstable*) data_dir=google-chrome-unstable ;;
+google-chrome*) data_dir=google-chrome ;;
+brave*) data_dir=BraveSoftware/Brave-Browser ;;
+microsoft-edge*) data_dir=microsoft-edge ;;
+vivaldi*) data_dir=vivaldi ;;
+opera* | helium*) exit 0 ;;
+*) data_dir=chromium ;;
+esac
+
+local_state="${XDG_CONFIG_HOME:-$HOME/.config}/$data_dir/Local State"
+[[ -f $local_state ]] || exit 0
+
+# Profile directory, display name and signed-in account, in the browser's own
+# profile order.
+mapfile -t profiles < <(jq -r '
+  .profile.info_cache as $cache
+  | (.profile.profiles_order // []) as $order
+  | ($order + (($cache | keys) - $order))[]
+  | select($cache[.] != null)
+  | [., ($cache[.].name // .), ($cache[.].user_name // "")]
+  | @tsv
+' "$local_state" 2>/dev/null)
+
+(( ${#profiles[@]} > 1 )) || exit 0
+
+options=() keys=() dirs=()
+for row in "${profiles[@]}"; do
+  IFS=$'\t' read -r dir name account <<<"$row"
+  subtext=${account:-$dir}
+  options+=($'\t'"$name"$'\t'"$subtext")
+  keys+=("$name"$'\t'"$subtext")
+  dirs+=("$dir")
+done
+
+app_name=$(sed -n 's/^Name=//p' "$file" | head -1)
+choice=$(omarchy-menu-select "Chrome profile for ${app_name:-web app}" "${options[@]}" -- --width 520) || exit 0
+
+profile_dir=""
+for i in "${!keys[@]}"; do
+  if [[ ${keys[$i]} == "$choice" ]]; then
+    profile_dir=${dirs[$i]}
+    profile_name=${choice%%$'\t'*}
+    break
+  fi
+done
+[[ -n $profile_dir ]] || exit 0
+
+# The flag is one Exec argument (freedesktop Exec quoting), then the whole
+# value gets Desktop Entry string escaping, matching omarchy-webapp-install.
+exec_arg=$(printf '%s' "--profile-directory=$profile_dir" |
+  sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/`/\\`/g' -e 's/\$/\\$/g' -e 's/%/%%/g')
+exec_arg="\"$exec_arg\""
+exec_arg=${exec_arg//\\/\\\\}
+
+# The launcher may have changed while the picker was open.
+exec_line=$(grep -m1 '^Exec=' "$file") || exit 0
+[[ $exec_line == "Exec=omarchy-launch-webapp "* && $exec_line != *--profile-directory* ]] || exit 0
+
+# Replace atomically. The temp name doesn't end in .desktop, so the watcher
+# ignores it; the rename reports the launcher again, which now pins a profile
+# and is skipped.
+tmp=$(mktemp "$file.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+NEW_EXEC="$exec_line $exec_arg" awk '
+  !done && /^Exec=/ { print ENVIRON["NEW_EXEC"]; done = 1; next }
+  { print }
+' "$file" >"$tmp"
+chmod --reference="$file" "$tmp"
+mv -f "$tmp" "$file"
+
+omarchy-notification-send -g $'' "${app_name:-Web app} uses $profile_name" "Chrome profile: $profile_dir" || true

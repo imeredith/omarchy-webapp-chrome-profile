@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "direkiwi.webapp-chrome-profile",
+  "name": "Web App Chrome Profile",
+  "version": "1.0.0",
+  "author": "Ivan Meredith",
+  "description": "Asks which Chrome profile a newly installed web app should use, and pins its launcher to that profile.",
+  "kinds": [
+    "service"
+  ],
+  "entryPoints": {
+    "service": "Service.qml"
+  }
+}
