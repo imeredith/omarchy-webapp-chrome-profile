@@ -11,7 +11,14 @@ Chromium otherwise. Dismissing the picker leaves the launcher as it was, on the
 browser's last-used profile. With only one profile there's nothing to ask, so
 launchers are left alone.
 
-Needs `inotify-tools`.
+A launcher only changes after you choose a profile for it. The plugin never
+touches other `.desktop` files or any other configuration.
+
+## Requirements
+
+- Omarchy with `omarchy-shell`
+- A Chromium-based browser with more than one profile
+- `inotify-tools` and `jq`, which Omarchy installs by default
 
 ## How it works
 
@@ -30,7 +37,6 @@ again.
 ## Install
 
 ```bash
-sudo pacman -S inotify-tools
 omarchy plugin add https://github.com/<owner>/omarchy-webapp-chrome-profile.git --enable
 ```
 
@@ -41,6 +47,16 @@ ln -s ~/personal/omarchy-webapp-chrome-profile ~/.config/omarchy/plugins/direkiw
 omarchy-shell shell rescanPlugins
 omarchy plugin enable direkiwi.webapp-chrome-profile
 ```
+
+## Remove
+
+```bash
+omarchy plugin remove direkiwi.webapp-chrome-profile
+```
+
+Launchers that already pin a profile keep it. To unpin one, delete
+`--profile-directory=...` from its `Exec` line in
+`~/.local/share/applications/`.
 
 ## License
 
