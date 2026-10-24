@@ -41,3 +41,7 @@ ln -s ~/personal/omarchy-webapp-chrome-profile ~/.config/omarchy/plugins/direkiw
 omarchy-shell shell rescanPlugins
 omarchy plugin enable direkiwi.webapp-chrome-profile
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).

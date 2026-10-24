@@ -4,6 +4,7 @@
   "name": "Web App Chrome Profile",
   "version": "1.0.0",
   "author": "Ivan Meredith",
+  "license": "MIT",
   "description": "Asks which Chrome profile a newly installed web app should use, and pins its launcher to that profile.",
   "kinds": [
     "service"
