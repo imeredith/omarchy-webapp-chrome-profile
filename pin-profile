@@ -21,12 +21,18 @@ mkdir -p "$lock_dir"
 exec 9>"$lock_dir/$(basename "$file").lock"
 flock -n 9 || exit 0
 
+# The launcher's Exec line, when it is a plain web app with no profile yet.
+unpinned_exec_line() {
+  local line
+  line=$(grep -m1 '^Exec=' "$file") || return 1
+  [[ $line == "Exec=omarchy-launch-webapp "* && $line != *--profile-directory* ]] || return 1
+  printf '%s\n' "$line"
+}
+
 # Let the installer finish writing before reading the launcher.
 sleep 0.5
 
-exec_line=$(grep -m1 '^Exec=' "$file") || exit 0
-[[ $exec_line == "Exec=omarchy-launch-webapp "* ]] || exit 0
-[[ $exec_line == *--profile-directory* ]] && exit 0
+unpinned_exec_line >/dev/null || exit 0
 
 # Same browser choice as omarchy-launch-webapp: the default browser when it is
 # Chromium-based, otherwise Chromium.
@@ -66,8 +72,18 @@ for row in "${profiles[@]}"; do
   dirs+=("$dir")
 done
 
+# One picker at a time. The menu serves only its newest request, so pickers
+# opened together (omarchy-refresh-applications copies every stock web app at
+# once) would leave all but the last waiting forever. The timeout frees the
+# queue if another menu summon takes the picker over.
+exec 8>"$lock_dir/picker.lock"
+flock 8
+
+# The launcher may have changed or gone while this waited its turn.
+[[ -f $file ]] && unpinned_exec_line >/dev/null || exit 0
+
 app_name=$(sed -n 's/^Name=//p' "$file" | head -1)
-choice=$(omarchy-menu-select "Chrome profile for ${app_name:-web app}" "${options[@]}" -- --width 520) || exit 0
+choice=$(timeout 300 omarchy-menu-select "Chrome profile for ${app_name:-web app}" "${options[@]}" -- --width 520) || exit 0
 
 profile_dir=""
 for i in "${!keys[@]}"; do
@@ -87,8 +103,7 @@ exec_arg="\"$exec_arg\""
 exec_arg=${exec_arg//\\/\\\\}
 
 # The launcher may have changed while the picker was open.
-exec_line=$(grep -m1 '^Exec=' "$file") || exit 0
-[[ $exec_line == "Exec=omarchy-launch-webapp "* && $exec_line != *--profile-directory* ]] || exit 0
+exec_line=$(unpinned_exec_line) || exit 0
 
 # Replace atomically. The temp name doesn't end in .desktop, so the watcher
 # ignores it; the rename reports the launcher again, which now pins a profile
